@@ -1,95 +1,50 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import RightContent from './components/RightContent';
+import LeftContent from './components/LeftContent';
+
+export const metadata = {
+  title: "Angela Rachel",
+  description: "Personal website of Angela – a full-stack developer exploring frontend and DevOps.",
+  keywords: ["Angela Rachel", "Developer", "Full-Stack", "Portfolio", "React", "Next.js"],
+  authors: [{ name: "Angela" }],
+  creator: "Angela Rachel",
+  openGraph: {
+    title: "Angela Rachel",
+    description: "Full-stack developer exploring frontend and DevOps.",
+    url: "https://yourdomain.com",
+    siteName: "Angela's Portfolio",
+    images: [
+      {
+        url: "https://yourdomain.com/og-image.png", // Optional
+        width: 1200,
+        height: 630,
+        alt: "Angela's Portfolio",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Angela Rachel",
+    description: "Personal site of Angela – Developer & Explorer",
+    images: ["https://yourdomain.com/og-image.png"],
+  },
+  icons: {
+    icon: "/favicon.ico", // or .png
+  },
+};
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  // Example: src/app/page.tsx
+
+
+
+  return (
+    <div className='mx-auto min-h-screen max-w-screen-xl px-6 py-12 md:px-12 md:py-16 lg:py-0'>
+    <div className="lg:flex lg:justify-between lg:gap-4">
+      <LeftContent/>
+      <RightContent />
+    </div>
     </div>
   );
 }
