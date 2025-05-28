@@ -45,7 +45,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 3. Once the build succeeds, the output is uploaded to an Amazon S3 bucket configured to serve as a static website.
 
-4. The site is then live and accessible at: [angelarachel.dev](angelarachel.dev)
+4. The site is then live and accessible at: [angelarachel.dev](https://angelarachel.dev)
 
 ## This automated pipeline ensures that every update to the main branch is quickly and reliably deployed to the live site without manual intervention.
 
