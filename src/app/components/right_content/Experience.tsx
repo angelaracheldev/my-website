@@ -10,7 +10,7 @@ export default function Experience() {
     {
       role: "Software Engineer",
       company: "CRM Online Philippines",
-      date: "August 2019 – January 2021",
+      date: "August 2019 – January 2022",
       description: `Maintained and extended SugarCRM systems, ensuring performance and stability for ongoing client needs. \n Built APIs with PHP (Lumen) and worked on frontend development for a hybrid mobile app using Ionic-Angular.`,
       tools: ["PHP (Lumen)", "React", "Node.js", "Ionic", "Angular", "SugarCRM"],
     },
