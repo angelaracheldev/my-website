@@ -3,7 +3,7 @@ export default function Experience() {
     // {
     //   role: "Technical Virtual Assistant",
     //   company: "Solo Client Project",
-    //   date: "January 2024 – February 2025",
+    //   date: "April 2024 – March 2025",
     //   description: `Built an automated chat system for a P2P trading platform to streamline trade communications\n Developed tools to track earnings and generate monthly statistics.\n Created custom applications to assist the client in her trading workflow\nSupported decision-making by delivering tailored features and improvements based on trading needs`,
     //   tools: ["Python", "React", "API", "Webhook"],
     // },
