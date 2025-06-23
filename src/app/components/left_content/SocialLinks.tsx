@@ -25,7 +25,7 @@ export default function SocialLinks() {
       </a>
 
       <a
-        href="https://www.instagram.com/gheleebee"
+        href="https://www.instagram.com/angelareichi"
         target="_blank"
         rel="noopener noreferrer"
         className="btn btn-ghost btn-circle text-base-content hover:text-primary"

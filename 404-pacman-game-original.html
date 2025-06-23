@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>404 - Page Not Found | Pacman Game</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .title {
+            font-size: clamp(1.5em, 5vw, 2.5em);
+            margin-bottom: 10px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        canvas {
+            border: 3px solid #ff6b6b;
+            border-radius: 10px;
+            background-color: #000080;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .controls {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #4ecdc4;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin: 10px 0;
+            color: #ffff00;
+        }
+
+        .game-over, .you-win {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff4444;
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            border: 4px solid #ff4444;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.7);
+            display: none;
+        }
+
+        .you-win {
+            color: #44ff44;
+            border-color: #44ff44;
+            box-shadow: 0 0 30px rgba(68, 255, 68, 0.7);
+        }
+
+        .restart-instruction {
+            font-size: 18px;
+            margin-top: 15px;
+            opacity: 0.8;
+        }
+
+        .start-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffff00;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            border: 3px solid #ffff00;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .restart-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            display: none;
+        }
+
+        .restart-btn:hover {
+            background: #ff5252;
+        }
+
+        /* Mobile Controls */
+        .mobile-controls {
+            display: none;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            gap: 10px;
+            width: clamp(150px, 40vw, 200px);
+            height: clamp(150px, 40vw, 200px);
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #4ecdc4;
+            color: white;
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            backdrop-filter: blur(10px);
+            transition: all 0.1s ease;
+        }
+
+        .control-btn:active {
+            background: rgba(78, 205, 196, 0.3);
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5);
+        }
+
+        .control-btn.up { grid-column: 2; grid-row: 1; }
+        .control-btn.left { grid-column: 1; grid-row: 2; }
+        .control-btn.right { grid-column: 3; grid-row: 2; }
+        .control-btn.down { grid-column: 2; grid-row: 3; }
+
+        .restart-btn-mobile {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            border: 2px solid #fff;
+            color: white;
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            touch-action: manipulation;
+            transition: all 0.1s ease;
+        }
+
+        .restart-btn-mobile:active {
+            background: linear-gradient(45deg, #cc5555, #cc7777);
+            transform: scale(0.95);
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .mobile-controls {
+                display: grid;
+            }
+
+            .start-message, .game-over, .you-win {
+                width: 80%;
+                max-width: 300px;
+                font-size: clamp(16px, 4vw, 20px);
+                padding: 15px;
+            }
+
+            .restart-instruction {
+                font-size: clamp(12px, 3vw, 14px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                margin-bottom: 5px;
+            }
+
+            .score {
+                padding: 8px 10px;
+                margin-bottom: 10px;
+                font-size: clamp(12px, 3vw, 16px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">404 - Page Not Found!</h1>
+        <p class="subtitle">But hey, enjoy this Pacman game while you're here!</p>
+        <div class="score">Score: <span id="score">0</span> | <span id="livesDisplay">❤️❤️❤️</span> | 👻 <span id="ghostsEaten">0</span></div>
+        <div style="position: relative; display: inline-block; width: 100%; max-width: 800px;">
+            <canvas id="gameCanvas" width="800" height="600" style="width: 100%; height: auto; border: 2px solid #4ecdc4; border-radius: 10px; box-shadow: 0 0 20px rgba(78, 205, 196, 0.3); background: radial-gradient(circle at center, #000080, #000040);"></canvas>
+            <div class="start-message" id="startMessage">Tap to Start!</div>
+            <div class="game-over" id="gameOver">
+                Game Over!<br>
+                <div class="restart-instruction">Press R or Tap Restart to Play Again</div>
+            </div>
+            <div class="you-win" id="youWin">
+                You Win!<br>
+                <div class="restart-instruction">Press R or Tap Restart to Play Again</div>
+            </div>
+        </div>
+        
+        <!-- Mobile Controls -->
+        <div class="mobile-controls" id="mobileControls">
+            <div class="control-btn up" id="upBtn">↑</div>
+            <div class="control-btn left" id="leftBtn">←</div>
+            <div class="control-btn right" id="rightBtn">→</div>
+            <div class="control-btn down" id="downBtn">↓</div>
+        </div>
+        
+        <button class="restart-btn-mobile" id="restartBtnMobile" onclick="window.restartGame()" style="display: none;">Restart Game</button>
+        <div class="controls">
+            Use arrow keys to move Pacman around the 404!
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const livesDisplayElement = document.getElementById('livesDisplay');
+        const ghostsEatenElement = document.getElementById('ghostsEaten');
+        const gameOverElement = document.getElementById('gameOver');
+        const youWinElement = document.getElementById('youWin');
+        const startMessage = document.getElementById('startMessage');
+        const restartBtnMobile = document.getElementById('restartBtnMobile');
+
+        // Mobile detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+        // Adjust canvas for mobile
+        function adjustCanvasForMobile() {
+            if (isMobile) {
+                const container = canvas.parentElement;
+                const containerWidth = container.clientWidth;
+                const aspectRatio = 800 / 600;
+                
+                canvas.style.width = containerWidth + 'px';
+                canvas.style.height = (containerWidth / aspectRatio) + 'px';
+            }
+        }
+
+        // Call on load and resize
+        adjustCanvasForMobile();
+        window.addEventListener('resize', adjustCanvasForMobile);
+
+        // Game variables
+        let score = 0;
+        let gameRunning = false;
+        let gameStarted = false;
+        let lives = 3;
+        let ghostsEaten = 0;
+        let isHit = false; // Flag to prevent multiple hits
+        let pacman = { 
+            body: [{ x: 40, y: 300 }], // Start at leftmost position
+            size: 18, // Smaller Pacman size
+            direction: 'right', 
+            mouthOpen: true,
+            moveCounter: 0, // Counter to slow down movement
+            moveSpeed: 10, // Move every 10 frames (slower)
+            hasEatenGhost: false // Track if player has eaten any ghost
+        };
+        let ghosts = [];
+        let dots = [];
+        let powerPellets = [];
+        let walls = [];
+        let redWalls = [];
+        let powerMode = false;
+        let powerModeTimer = 0;
+
+        // Sound effects (using Web Audio API) - More playful, lower-pitched sounds
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function createBeep(frequency, duration, volume = 0.1, type = 'sine') {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume, audioContext.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playEatSound() {
+            // Friendlier chomp - lower frequencies, softer tone
+            const freq1 = 400; // Much lower than 2637
+            const freq2 = 300; // Much lower than 2093
+            const useHigh = Math.random() > 0.5;
+            createBeep(useHigh ? freq1 : freq2, 0.1, 0.12, 'sine');
+        }
+
+        function playPowerPelletSound() {
+            // Cheerful ascending melody - playful and bouncy
+            const notes = [220, 277, 330, 392, 440]; // Pleasant ascending scale
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    createBeep(freq, 0.15, 0.15, 'sine');
+                }, index * 80);
+            });
+        }
+
+        function playEatGhostSound() {
+            // Happy victory sound - major chord progression
+            const notes = [262, 330, 392, 523]; // C major chord
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    createBeep(freq, 0.25, 0.2, 'sine');
+                }, index * 100);
+            });
+        }
+
+        function playGameOverSound() {
+            // Gentle descending melody - not harsh
+            const sadNotes = [392, 370, 349, 330, 311, 294, 277, 262];
+            sadNotes.forEach((freq, index) => {
+                setTimeout(() => {
+                    createBeep(freq, 0.2, 0.15, 'triangle');
+                }, index * 150);
+            });
+        }
+
+        function playHitSound() {
+            // Create a hit/death sound - descending tone
+            const hitNotes = [300, 250, 200, 150];
+            hitNotes.forEach((freq, index) => {
+                setTimeout(() => {
+                    createBeep(freq, 0.3, 0.2, 'triangle');
+                }, index * 100);
+            });
+        }
+
+        // Function to update lives display with hearts
+        function updateLivesDisplay() {
+            let heartsDisplay = '';
+            for (let i = 0; i < lives; i++) {
+                heartsDisplay += '❤️';
+            }
+            // Add empty hearts for lost lives
+            for (let i = lives; i < 3; i++) {
+                heartsDisplay += '🖤';
+            }
+            livesDisplayElement.textContent = heartsDisplay;
+        }
+
+        function playStartSound() {
+            // Cheerful welcome tune - major scale
+            const welcomeNotes = [
+                {freq: 262, dur: 0.2}, // C
+                {freq: 294, dur: 0.2}, // D
+                {freq: 330, dur: 0.2}, // E
+                {freq: 392, dur: 0.3}, // G
+                {freq: 523, dur: 0.4}  // C (higher)
+            ];
+            
+            welcomeNotes.forEach((note, index) => {
+                setTimeout(() => {
+                    createBeep(note.freq, note.dur, 0.18, 'sine');
+                }, index * 200);
+            });
+        }
+
+        function playWakkaSound() {
+            // Gentle wakka-wakka - much lower and softer
+            if (gameRunning && (keys['ArrowUp'] || keys['ArrowDown'] || keys['ArrowLeft'] || keys['ArrowRight'])) {
+                const wakkaHigh = 350; // Much lower than 1319
+                const wakkaLow = 280;  // Much lower than 1047
+                
+                const useHigh = Date.now() % 400 < 200;
+                createBeep(useHigh ? wakkaHigh : wakkaLow, 0.08, 0.08, 'sine');
+            }
+        }
+
+        function playScaredGhostSound() {
+            // Playful scared sound - not menacing
+            if (powerMode && gameRunning) {
+                createBeep(150 + (Math.sin(Date.now() * 0.008) * 30), 0.1, 0.06, 'triangle');
+            }
+        }
+
+        // Create 404-shaped walls with better proportions
+        function create404Walls() {
+            walls = [];
+            redWalls = [];
+            const wallThickness = 20;
+            
+            // "4" shape (left side) - moved away from border
+            // Left vertical line (top part only)
+            for (let y = 100; y < 220; y += wallThickness) {
+                walls.push({ x: 40, y: y, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+            // Horizontal line (connecting left to right)
+            for (let x = 40; x < 160; x += wallThickness) {
+                walls.push({ x: x, y: 200, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+            // Right vertical line (full height)
+            for (let y = 100; y < 400; y += wallThickness) {
+                walls.push({ x: 140, y: y, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+
+            // "0" shape (middle) - with alternating gaps on each side
+            // Top wall (complete)
+            for (let x = 320; x < 480; x += wallThickness) {
+                walls.push({ x: x, y: 100, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Bottom wall (complete)
+            for (let x = 320; x < 480; x += wallThickness) {
+                walls.push({ x: x, y: 380, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Left wall (with two gaps - alternating pattern)
+            for (let y = 100; y < 180; y += wallThickness) {
+                walls.push({ x: 320, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Gap 1: y = 180 to 220 (40px gap)
+            for (let y = 240; y < 320; y += wallThickness) {
+                walls.push({ x: 320, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Gap 2: y = 320 to 360 (40px gap)
+            for (let y = 380; y < 400; y += wallThickness) {
+                walls.push({ x: 320, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            
+            // Right wall (with two gaps - alternating pattern, offset from left)
+            for (let y = 100; y < 140; y += wallThickness) {
+                walls.push({ x: 460, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Gap 1: y = 140 to 180 (40px gap)
+            for (let y = 200; y < 280; y += wallThickness) {
+                walls.push({ x: 460, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+            // Gap 2: y = 280 to 320 (40px gap)
+            for (let y = 340; y < 400; y += wallThickness) {
+                walls.push({ x: 460, y: y, width: wallThickness, height: wallThickness, color: 'red' });
+            }
+
+            // "4" shape (right side) - moved away from border
+            // Left vertical line (top part only)
+            for (let y = 100; y < 220; y += wallThickness) {
+                walls.push({ x: 640, y: y, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+            // Horizontal line (connecting left to right)
+            for (let x = 640; x < 760; x += wallThickness) {
+                walls.push({ x: x, y: 200, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+            // Right vertical line (full height)
+            for (let y = 100; y < 400; y += wallThickness) {
+                walls.push({ x: 740, y: y, width: wallThickness, height: wallThickness, color: 'white' });
+            }
+
+
+            // Add red walls (150px long each) - different shade of red
+            redWalls = [
+                // Vertical red walls only (removed bottom horizontal walls)
+                { x: 250, y: 275, width: 20, height: 150 },
+                { x: 550, y: 275, width: 20, height: 150 }
+            ];
+
+            // Add 2 horizontal walls near the bottom
+            // First horizontal wall near bottom (left side)
+            for (let x = 100; x < 300; x += wallThickness) {
+                walls.push({ x: x, y: 480, width: wallThickness, height: wallThickness, color: 'blue' });
+            }
+            // Second horizontal wall near bottom (right side)
+            for (let x = 500; x < 700; x += wallThickness) {
+                walls.push({ x: x, y: 520, width: wallThickness, height: wallThickness, color: 'blue' });
+            }
+        }
+
+        function createDots() {
+            dots = [];
+            powerPellets = [];
+            
+            // Create dots on 30px grid for better spacing
+            for (let x = 30; x <= 770; x += 30) {
+                for (let y = 30; y <= 570; y += 30) {
+                    // Skip wall areas
+                    if (!isWallCollision(x - 15, y - 15, 30)) {
+                        dots.push({ x: x, y: y, size: 3 });
+                    }
+                }
+            }
+
+            // Add power pellets on 30px grid
+            const powerPelletLocations = [
+                { x: 180, y: 300 }, // Near starting area
+                { x: 390, y: 180 }, // Upper middle
+                { x: 600, y: 420 }, // Lower right area
+                { x: 270, y: 450 }, // Lower left area
+                { x: 570, y: 150 }  // Upper right area
+            ];
+            
+            powerPelletLocations.forEach(location => {
+                // Remove any regular dot at this position
+                dots = dots.filter(dot => 
+                    Math.abs(dot.x - location.x) > 15 || Math.abs(dot.y - location.y) > 15
+                );
+                powerPellets.push({ x: location.x, y: location.y, size: 8 });
+            });
+        }
+
+        // Create ghosts
+        function createGhosts() {
+            ghosts = [
+                { x: 390, y: 150, size: 18, color: '#ff0080', dx: 1, dy: 0, scared: false, originalColor: '#ff0080' },
+                { x: 390, y: 240, size: 18, color: '#00ff80', dx: 0, dy: 1, scared: false, originalColor: '#00ff80' },
+                { x: 390, y: 320, size: 18, color: '#8000ff', dx: -1, dy: 0, scared: false, originalColor: '#8000ff' },
+                { x: 390, y: 280, size: 18, color: '#ff69b4', dx: 1, dy: 1, scared: false, originalColor: '#ff69b4' }
+            ];
+        }
+
+        // Check wall collision with better clearance detection
+        function isWallCollision(x, y, size) {
+            // Check main walls
+            for (let wall of walls) {
+                if (x < wall.x + wall.width + 5 &&
+                    x + size > wall.x - 5 &&
+                    y < wall.y + wall.height + 5 &&
+                    y + size > wall.y - 5) {
+                    return true;
+                }
+            }
+            
+            // Check green walls
+            for (let wall of redWalls) {
+                if (x < wall.x + wall.width + 5 &&
+                    x + size > wall.x - 5 &&
+                    y < wall.y + wall.height + 5 &&
+                    y + size > wall.y - 5) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        // Handle keyboard input
+        const keys = {};
+        let wakkaInterval;
+        
+        document.addEventListener('keydown', (e) => {
+            // Start game on any key press
+            if (!gameStarted) {
+                startGame();
+                return;
+            }
+            
+            // Restart game with R key
+            if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                window.restartGame();
+                return;
+            }
+            
+            keys[e.key] = true;
+            if (gameRunning && !wakkaInterval) {
+                // Start wakka sound when movement begins
+                wakkaInterval = setInterval(playWakkaSound, 250); // Slower for more pleasant sound
+            }
+        });
+
+        // Touch controls for mobile
+        function setupTouchControls() {
+            const upBtn = document.getElementById('upBtn');
+            const downBtn = document.getElementById('downBtn');
+            const leftBtn = document.getElementById('leftBtn');
+            const rightBtn = document.getElementById('rightBtn');
+
+            // Touch start events
+            upBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys['ArrowUp'] = true;
+                if (!gameStarted) startGame();
+            });
+
+            downBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys['ArrowDown'] = true;
+                if (!gameStarted) startGame();
+            });
+
+            leftBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys['ArrowLeft'] = true;
+                if (!gameStarted) startGame();
+            });
+
+            rightBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys['ArrowRight'] = true;
+                if (!gameStarted) startGame();
+            });
+
+            // Touch end events
+            upBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys['ArrowUp'] = false;
+            });
+
+            downBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys['ArrowDown'] = false;
+            });
+
+            leftBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys['ArrowLeft'] = false;
+            });
+
+            rightBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys['ArrowRight'] = false;
+            });
+
+            // Also handle mouse events for desktop testing
+            [upBtn, downBtn, leftBtn, rightBtn].forEach(btn => {
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    const direction = btn.id.replace('Btn', '');
+                    keys[`Arrow${direction.charAt(0).toUpperCase() + direction.slice(1)}`] = true;
+                    if (!gameStarted) startGame();
+                });
+
+                btn.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    const direction = btn.id.replace('Btn', '');
+                    keys[`Arrow${direction.charAt(0).toUpperCase() + direction.slice(1)}`] = false;
+                });
+            });
+        }
+
+        // Canvas tap to start
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameStarted) {
+                startGame();
+            }
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (!gameStarted) {
+                startGame();
+            }
+        });
+
+        // Setup touch controls
+        setupTouchControls();
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+            // Stop wakka sound when no keys are pressed
+            if (!keys['ArrowUp'] && !keys['ArrowDown'] && !keys['ArrowLeft'] && !keys['ArrowRight']) {
+                if (wakkaInterval) {
+                    clearInterval(wakkaInterval);
+                    wakkaInterval = null;
+                }
+            }
+        });
+
+        // Update pacman position
+        function updatePacman() {
+            if (!gameRunning) return;
+
+            // Check for direction changes from key presses (with restrictions if no ghost eaten)
+            if (!pacman.hasEatenGhost) {
+                // Restricted movement: can switch between axes but stay within same axis after first turn
+                if (keys['ArrowUp']) {
+                    pacman.direction = 'up';
+                }
+                if (keys['ArrowDown']) {
+                    pacman.direction = 'down';
+                }
+                if (keys['ArrowLeft']) {
+                    pacman.direction = 'left';
+                }
+                if (keys['ArrowRight']) {
+                    pacman.direction = 'right';
+                }
+            } else {
+                // Full movement after eating a ghost - can change between any directions (no reverse)
+                if (keys['ArrowUp'] && pacman.direction !== 'down') {
+                    pacman.direction = 'up';
+                }
+                if (keys['ArrowDown'] && pacman.direction !== 'up') {
+                    pacman.direction = 'down';
+                }
+                if (keys['ArrowLeft'] && pacman.direction !== 'right') {
+                    pacman.direction = 'left';
+                }
+                if (keys['ArrowRight'] && pacman.direction !== 'left') {
+                    pacman.direction = 'right';
+                }
+            }
+
+            // Increment move counter
+            pacman.moveCounter++;
+            
+            // Only move when counter reaches moveSpeed
+            if (pacman.moveCounter < pacman.moveSpeed) {
+                // Still animate mouth even when not moving
+                pacman.mouthOpen = !pacman.mouthOpen;
+                return;
+            }
+            
+            // Reset counter
+            pacman.moveCounter = 0;
+
+            const head = pacman.body[0];
+            let newX = head.x;
+            let newY = head.y;
+
+            // Move automatically in current direction
+            switch (pacman.direction) {
+                case 'up':
+                    newY -= 20;
+                    break;
+                case 'down':
+                    newY += 20;
+                    break;
+                case 'left':
+                    newX -= 20;
+                    break;
+                case 'right':
+                    newX += 20;
+                    break;
+            }
+
+            // Handle wraparound at screen edges
+            if (newX < 0) {
+                newX = canvas.width - 20; // Wrap to right side
+            } else if (newX >= canvas.width) {
+                newX = 0; // Wrap to left side
+            }
+            
+            if (newY < 0) {
+                newY = canvas.height - 20; // Wrap to bottom
+            } else if (newY >= canvas.height) {
+                newY = 0; // Wrap to top
+            }
+
+            // Check wall collision - just stop movement, don't move if blocked
+            if (!isWallCollision(newX, newY, pacman.size)) {
+                // Safe to move - add new head
+                pacman.body.unshift({ x: newX, y: newY });
+                
+                // Remove tail (unless we just ate food - handled in checkDotCollection)
+                if (!pacman.justAte) {
+                    pacman.body.pop();
+                }
+                pacman.justAte = false;
+            }
+
+            // Animate mouth
+            pacman.mouthOpen = !pacman.mouthOpen;
+        }
+            // If wall collision, just don't move (stay in place)
+
+            // Toggle mouth animation
+            pacman.mouthOpen = !pacman.mouthOpen;
+        
+
+        // Check if Pacman collides with himself
+        function isSelfCollision(x, y) {
+            for (let i = 1; i < pacman.body.length; i++) {
+                if (pacman.body[i].x === x && pacman.body[i].y === y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Update ghosts
+        function updateGhosts() {
+            if (!gameRunning) return;
+
+            // Update power mode timer
+            if (powerMode) {
+                powerModeTimer--;
+                if (powerModeTimer <= 0) {
+                    powerMode = false;
+                    // Reset ghost colors (but keep Pacman's length)
+                    ghosts.forEach(ghost => {
+                        ghost.scared = false;
+                        ghost.color = ghost.originalColor;
+                    });
+                }
+            }
+
+            ghosts.forEach((ghost, index) => {
+                // Slower ghost movement - reduced speed
+                let speed = ghost.scared ? 0.5 : 1; // Much slower: 1 pixel per frame instead of 2
+                let newX = ghost.x + ghost.dx * speed;
+                let newY = ghost.y + ghost.dy * speed;
+
+                // Handle wraparound at screen edges for ghosts
+                if (newX < 0) {
+                    newX = canvas.width - 20; // Wrap to right side
+                } else if (newX >= canvas.width) {
+                    newX = 0; // Wrap to left side
+                }
+                
+                if (newY < 0) {
+                    newY = canvas.height - 20; // Wrap to bottom
+                } else if (newY >= canvas.height) {
+                    newY = 0; // Wrap to top
+                }
+
+                // Check for wall collision
+                if (isWallCollision(newX, newY, ghost.size)) {
+                    // Hit a wall, pick a new random direction
+                    const directions = [
+                        { dx: 1, dy: 0 },   // right
+                        { dx: -1, dy: 0 },  // left
+                        { dx: 0, dy: 1 },   // down
+                        { dx: 0, dy: -1 }   // up
+                    ];
+                    
+                    // Pick a random direction that's different from current
+                    let newDirection;
+                    do {
+                        newDirection = directions[Math.floor(Math.random() * directions.length)];
+                    } while (newDirection.dx === ghost.dx && newDirection.dy === ghost.dy);
+                    
+                    ghost.dx = newDirection.dx;
+                    ghost.dy = newDirection.dy;
+                    
+                    // Try the new direction
+                    newX = ghost.x + ghost.dx * speed;
+                    newY = ghost.y + ghost.dy * speed;
+                    
+                    // Handle wraparound for new direction too
+                    if (newX < 0) {
+                        newX = canvas.width - 20;
+                    } else if (newX >= canvas.width) {
+                        newX = 0;
+                    }
+                    if (newY < 0) {
+                        newY = canvas.height - 20;
+                    } else if (newY >= canvas.height) {
+                        newY = 0;
+                    }
+                    
+                    // If still hitting wall, don't move this frame
+                    if (isWallCollision(newX, newY, ghost.size)) {
+                        newX = ghost.x;
+                        newY = ghost.y;
+                    }
+                }
+
+                // Update position
+                ghost.x = newX;
+                ghost.y = newY;
+
+                // Check collision with pacman - GAME OVER if hit ghost (unless scared)
+                const head = pacman.body[0];
+                const distance = Math.sqrt(
+                    Math.pow(ghost.x - head.x, 2) + Math.pow(ghost.y - head.y, 2)
+                );
+                if (distance < ghost.size + pacman.size - 5) {
+                    if (powerMode && ghost.scared) {
+                        // Eat the ghost - make Pacman longer!
+                        score += 200;
+                        ghostsEaten++;
+                        scoreElement.textContent = score;
+                        ghostsEatenElement.textContent = ghostsEaten;
+                        playEatGhostSound();
+                        
+                        // Mark that player has eaten a ghost (unlock full movement)
+                        pacman.hasEatenGhost = true;
+                        
+                        // Make Pacman grow by 1 segment when eating a ghost
+                        const lastSegment = pacman.body[pacman.body.length - 1];
+                        pacman.body.push({ x: lastSegment.x, y: lastSegment.y });
+                        
+                        // Respawn ghost in center of 0
+                        ghost.x = 390;
+                        ghost.y = 240;
+                        ghost.scared = false;
+                        ghost.color = ghost.originalColor;
+                    } else if (!ghost.scared && !isHit) {
+                        // Hit ghost - lose a life (only if not already hit)
+                        isHit = true; // Prevent multiple hits
+                        lives--;
+                        updateLivesDisplay();
+                        playHitSound();
+                        
+                        if (lives <= 0) {
+                            // Game over - no more lives
+                            gameRunning = false;
+                            gameOverElement.style.display = 'block';
+                            if (isMobile) restartBtnMobile.style.display = 'block';
+                            playGameOverSound();
+                        } else {
+                            // Still have lives - reset Pacman immediately
+                            pacman.body = [{ x: 40, y: 300 }]; // Reset to leftmost starting position
+                            pacman.size = 18; // Smaller size
+                            pacman.direction = 'right'; // Reset direction to right
+                            pacman.moveCounter = 0; // Reset movement counter
+                            pacman.mouthOpen = true; // Reset mouth animation
+                            isHit = false; // Reset hit flag
+                            // Game continues running immediately
+                        }
+                    }
+                }
+            });
+        }
+
+        // Check dot and power pellet collection with improved alignment
+        function checkDotCollection() {
+            const head = pacman.body[0];
+            
+            // Check regular dots - use multiple collision methods for better detection
+            for (let i = dots.length - 1; i >= 0; i--) {
+                const dot = dots[i];
+                
+                // Method 1: Center-to-center distance
+                const pacmanCenterX = head.x + pacman.size / 2;
+                const pacmanCenterY = head.y + pacman.size / 2;
+                const centerDistance = Math.sqrt(
+                    Math.pow(dot.x - pacmanCenterX, 2) + 
+                    Math.pow(dot.y - pacmanCenterY, 2)
+                );
+                
+                // Method 2: Corner-to-dot distance
+                const cornerDistance = Math.sqrt(
+                    Math.pow(dot.x - head.x, 2) + 
+                    Math.pow(dot.y - head.y, 2)
+                );
+                
+                // Method 3: Rectangular overlap check
+                const rectOverlap = (
+                    head.x < dot.x + 10 && head.x + pacman.size > dot.x - 10 &&
+                    head.y < dot.y + 10 && head.y + pacman.size > dot.y - 10
+                );
+                
+                // Eat dot if any method detects collision
+                if (centerDistance < 18 || cornerDistance < 20 || rectOverlap) {
+                    dots.splice(i, 1);
+                    score += 10;
+                    scoreElement.textContent = score;
+                    playEatSound();
+                }
+            }
+
+            // Check power pellets with generous collision
+            for (let i = powerPellets.length - 1; i >= 0; i--) {
+                const pellet = powerPellets[i];
+                const pacmanCenterX = head.x + pacman.size / 2;
+                const pacmanCenterY = head.y + pacman.size / 2;
+                const distance = Math.sqrt(
+                    Math.pow(pellet.x - pacmanCenterX, 2) + 
+                    Math.pow(pellet.y - pacmanCenterY, 2)
+                );
+                
+                if (distance < 25) {
+                    powerPellets.splice(i, 1);
+                    score += 50;
+                    scoreElement.textContent = score;
+                    playPowerPelletSound();
+                    
+                    // Activate power mode
+                    powerMode = true;
+                    powerModeTimer = 900;
+                    
+                    // Make ghosts scared
+                    ghosts.forEach(ghost => {
+                        ghost.scared = true;
+                        ghost.color = '#0000ff';
+                    });
+                }
+            }
+        }
+
+        // Draw functions
+        function drawPacman() {
+            // Draw body segments (except head) - solid yellow
+            for (let i = 1; i < pacman.body.length; i++) {
+                const segment = pacman.body[i];
+                
+                ctx.fillStyle = '#ffff00'; // Solid yellow, no gradient or fading
+                ctx.beginPath();
+                ctx.arc(segment.x + pacman.size/2, segment.y + pacman.size/2, pacman.size/2 - 1, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // Draw Pacman head (first segment) - also solid yellow
+            const head = pacman.body[0];
+            const centerX = head.x + pacman.size/2;
+            const centerY = head.y + pacman.size/2;
+            const radius = pacman.size/2;
+            
+            // Add subtle shadow for depth
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(centerX + 2, centerY + 2, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Main Pacman head - solid yellow with transparent mouth
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            
+            let startAngle = 0;
+            let endAngle = 2 * Math.PI;
+            
+            if (pacman.mouthOpen) {
+                switch (pacman.direction) {
+                    case 'right':
+                        startAngle = 0.25 * Math.PI;
+                        endAngle = 1.75 * Math.PI;
+                        break;
+                    case 'left':
+                        startAngle = 1.25 * Math.PI;
+                        endAngle = 0.75 * Math.PI;
+                        break;
+                    case 'up':
+                        startAngle = 1.75 * Math.PI;
+                        endAngle = 1.25 * Math.PI;
+                        break;
+                    case 'down':
+                        startAngle = 0.75 * Math.PI;
+                        endAngle = 0.25 * Math.PI;
+                        break;
+                }
+                
+                // Draw Pacman body with mouth opening
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineTo(centerX, centerY);
+                ctx.fill();
+                
+                // Clear the mouth area to make it transparent
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                ctx.beginPath();
+                
+                // Create triangular mouth opening
+                ctx.moveTo(centerX, centerY);
+                switch (pacman.direction) {
+                    case 'right':
+                        ctx.lineTo(centerX + radius, centerY - radius * 0.4);
+                        ctx.lineTo(centerX + radius, centerY + radius * 0.4);
+                        break;
+                    case 'left':
+                        ctx.lineTo(centerX - radius, centerY - radius * 0.4);
+                        ctx.lineTo(centerX - radius, centerY + radius * 0.4);
+                        break;
+                    case 'up':
+                        ctx.lineTo(centerX - radius * 0.4, centerY - radius);
+                        ctx.lineTo(centerX + radius * 0.4, centerY - radius);
+                        break;
+                    case 'down':
+                        ctx.lineTo(centerX - radius * 0.4, centerY + radius);
+                        ctx.lineTo(centerX + radius * 0.4, centerY + radius);
+                        break;
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Reset composite operation
+                ctx.globalCompositeOperation = 'source-over';
+            } else {
+                // Closed mouth - draw full circle
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+            
+            // Add bigger eye
+            if (!pacman.mouthOpen || pacman.direction !== 'up') {
+                ctx.fillStyle = '#000000';
+                let eyeX = centerX;
+                let eyeY = centerY - radius/3;
+                
+                // Adjust eye position based on direction
+                switch (pacman.direction) {
+                    case 'right':
+                        eyeX = centerX + radius/4;
+                        eyeY = centerY - radius/3;
+                        break;
+                    case 'left':
+                        eyeX = centerX - radius/4;
+                        eyeY = centerY - radius/3;
+                        break;
+                    case 'up':
+                        eyeX = centerX;
+                        eyeY = centerY - radius/2;
+                        break;
+                    case 'down':
+                        eyeX = centerX;
+                        eyeY = centerY - radius/6;
+                        break;
+                }
+                
+                // Draw bigger eye (increased from radius/6 to radius/3.5)
+                ctx.beginPath();
+                ctx.arc(eyeX, eyeY, radius/3.5, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Add bigger eye highlight
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(eyeX - radius/8, eyeY - radius/8, radius/6, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Add smaller inner highlight for more depth
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(eyeX - radius/10, eyeY - radius/10, radius/12, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function drawGhosts() {
+            ghosts.forEach(ghost => {
+                // Flash between blue and white when power mode is ending (last 3 seconds)
+                let ghostColor = ghost.color;
+                if (powerMode && powerModeTimer < 180 && Math.floor(powerModeTimer / 10) % 2 === 0) {
+                    ghostColor = ghost.scared ? '#ffffff' : ghost.color;
+                }
+                
+                ctx.fillStyle = ghostColor;
+                ctx.beginPath();
+                ctx.arc(ghost.x + ghost.size/2, ghost.y + ghost.size/2, ghost.size/2, Math.PI, 0);
+                ctx.lineTo(ghost.x + ghost.size, ghost.y + ghost.size);
+                ctx.lineTo(ghost.x + ghost.size * 0.75, ghost.y + ghost.size * 0.75);
+                ctx.lineTo(ghost.x + ghost.size * 0.5, ghost.y + ghost.size);
+                ctx.lineTo(ghost.x + ghost.size * 0.25, ghost.y + ghost.size * 0.75);
+                ctx.lineTo(ghost.x, ghost.y + ghost.size);
+                ctx.closePath();
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(ghost.x + ghost.size * 0.3, ghost.y + ghost.size * 0.3, 3, 0, 2 * Math.PI);
+                ctx.arc(ghost.x + ghost.size * 0.7, ghost.y + ghost.size * 0.3, 3, 0, 2 * Math.PI);
+                ctx.fill();
+
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(ghost.x + ghost.size * 0.3, ghost.y + ghost.size * 0.3, 1.5, 0, 2 * Math.PI);
+                ctx.arc(ghost.x + ghost.size * 0.7, ghost.y + ghost.size * 0.3, 1.5, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function drawGridlines() {
+            ctx.strokeStyle = '#333333';
+            ctx.lineWidth = 0.5;
+            ctx.globalAlpha = 0.3;
+            
+            // Draw vertical gridlines every 30px
+            for (let x = 50; x < canvas.width; x += 30) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // Draw horizontal gridlines every 30px
+            for (let y = 50; y < canvas.height; y += 30) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawWalls() {
+            walls.forEach(wall => {
+                // Set color based on wall's color property
+                if (wall.color === 'white') {
+                    ctx.fillStyle = '#ffffff';
+                } else {
+                    ctx.fillStyle = '#ff0000'; // Default red for "0" and borders
+                }
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+            });
+            
+            // Draw red walls (different shade)
+            ctx.fillStyle = '#cc3333'; // Darker red shade
+            redWalls.forEach(wall => {
+                ctx.fillRect(wall.x, wall.y, wall.width, wall.height);
+                
+                // Add a subtle border for better visibility
+                ctx.strokeStyle = '#990000'; // Even darker red for border
+                ctx.lineWidth = 2;
+                ctx.strokeRect(wall.x, wall.y, wall.width, wall.height);
+            });
+        }
+
+        function drawDots() {
+            ctx.fillStyle = '#ffff00';
+            dots.forEach(dot => {
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.size, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function drawPowerPellets() {
+            // Animate power pellets with pulsing effect
+            const pulseSize = Math.sin(Date.now() * 0.01) * 2 + 8;
+            ctx.fillStyle = '#ffff00';
+            powerPellets.forEach(pellet => {
+                ctx.beginPath();
+                ctx.arc(pellet.x, pellet.y, pulseSize, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000080';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update game objects
+            updatePacman();
+            updateGhosts();
+            checkDotCollection();
+            checkWinCondition();
+
+            // Draw everything
+            drawGridlines();
+            drawWalls();
+            drawDots();
+            drawPowerPellets();
+            drawPacman();
+            drawGhosts();
+
+            // Play scared ghost sound during power mode
+            if (powerMode && Math.random() < 0.1) {
+                playScaredGhostSound();
+            }
+
+            // Check win condition
+            if (dots.length === 0 && powerPellets.length === 0 && gameRunning) {
+                gameRunning = false;
+                gameOverElement.textContent = 'You Win!';
+                gameOverElement.style.display = 'block';
+                restartBtn.style.display = 'inline-block';
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Restart game
+        // Make restartGame globally accessible and fix restart issues
+        window.restartGame = function() {
+            console.log("Restart function called - fixing game restart");
+            
+            // Stop any running intervals first
+            if (wakkaInterval) {
+                clearInterval(wakkaInterval);
+                wakkaInterval = null;
+            }
+            
+            // Reset all game variables
+            score = 0;
+            lives = 3;
+            ghostsEaten = 0;
+            isHit = false;
+            powerMode = false;
+            powerModeTimer = 0;
+            
+            // Update display elements
+            scoreElement.textContent = score;
+            updateLivesDisplay();
+            ghostsEatenElement.textContent = ghostsEaten;
+            
+            // Hide all overlay screens
+            gameOverElement.style.display = 'none';
+            youWinElement.style.display = 'none';
+            startMessage.style.display = 'none';
+            restartBtnMobile.style.display = 'none';
+            
+            // Reset Pacman to initial state
+            pacman = { 
+                body: [{ x: 40, y: 300 }],
+                size: 18, // Smaller Pacman size
+                direction: 'right', 
+                mouthOpen: true,
+                justAte: false,
+                moveCounter: 0,
+                moveSpeed: 10,
+                hasEatenGhost: false
+            };
+            
+            // Clear arrays and recreate game elements
+            walls = [];
+            redWalls = [];
+            dots = [];
+            powerPellets = [];
+            ghosts = [];
+            
+            create404Walls();
+            createDots();
+            createGhosts();
+            
+            // Set game state to running
+            gameRunning = true;
+            gameStarted = true;
+            
+            // Make sure game loop is running
+            gameLoop();
+            
+            console.log("Game restart complete - should be running now");
+        }
+
+        // Check win condition
+        function checkWinCondition() {
+            if (dots.length === 0 && powerPellets.length === 0) {
+                gameRunning = false;
+                youWinElement.style.display = 'block';
+                if (isMobile) restartBtnMobile.style.display = 'block';
+                // Play victory sound or use existing sound
+                playEatGhostSound(); // Reuse happy sound for victory
+            }
+        }
+
+        // Initialize game (setup only, don't start)
+        function initGame() {
+            create404Walls();
+            createDots();
+            createGhosts();
+            
+            // Draw initial state
+            drawInitialState();
+            
+            // Show start message
+            startMessage.style.display = 'block';
+        }
+
+        function drawInitialState() {
+            ctx.fillStyle = '#000080';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawGridlines();
+            drawWalls();
+            drawDots();
+            drawPowerPellets();
+            drawPacman();
+            drawGhosts();
+        }
+
+        function startGame() {
+            if (gameStarted) return;
+            
+            gameRunning = true;
+            gameStarted = true;
+            startMessage.style.display = 'none';
+            playStartSound();
+            gameLoop();
+        }
+
+        // Start the game
+        initGame();
+    </script>
+</body>
+</html>
